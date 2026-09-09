@@ -5,7 +5,7 @@
 El estudio de la expresión génica por RNA-SEQ requiere cuantificar las lecturas que provienen
 de todos los genes transcritos durante un momento fisiológico del tejido, órgano o individuo.
 El conocimiento estructural de los genes depende de contar idealmente con un genoma completo y
-previamente anotado. Ante la ausencia de ello, los genes y sus iso-formas se deben inferir a 
+anotado (genómica). Ante la ausencia de ello, los genes y sus iso-formas se deben inferir a 
 través de sus transcritos, por ello se debe realizar un ensamblaje de-novo a partir de las
 lecturas RNA-SEQ (en este caso) de diferentes muestras que corresponden a órganos de la planta.
 Idealmente, y dado que los genes se expresan de manera diferencial bajo numerosas condiciones,
