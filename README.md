@@ -369,6 +369,6 @@ sed -i '1i qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tssta
 head -n 10 blast_results_with_cov_1.tsv
  ```
 
-# PASOS SIGUIENTE: los siguientes pasos son el analisis de la expresion diferencial (DEGs)
+# PASOS SIGUIENTES: los siguientes pasos son el analisis de la expresion diferencial (DEGs)
  ```r
  ```
