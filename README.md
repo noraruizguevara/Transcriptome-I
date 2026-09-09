@@ -4,9 +4,10 @@
 # PASO 1: modificar headers para ser leidos por TRINITY (loop)
 ```r
 
-# En cadad FASTQ file, los headers descargados de NCBI
-# necesitan ser modificados para que terminen en "/1" y "/2"
-# respectivamente
+##  Trinity tiene requerimientos para el input. En cada FASTQ file,
+##  los headers descargados de NCBI necesitan ser modificados
+##  para que terminen en "/1" y "/2", respectivamente.
+## el siguiente loop se encarga de eso
 
 for r1 in *_1.fastq.gz
 do
@@ -49,10 +50,13 @@ ls -lh *.gz ;
 # PASO 2: limpiar reads con FASTP
 ```r
 
-# los arhivos FASTQ necesitan ser filtrados,
-# aquellos con baja calidad seran removidos
-# y se crean nuevos archivos FASTQ para luego
-# ser ensamblados
+## Los arhivos FASTQ necesitan ser filtrados, aquellos con baja calidad seran removidos
+## y sse crean nuevos archivos FASTQ para luego ser ensamblados con FASTP.
+## lo parametros seteados en este programa tiene por objetivo :
+## retener lecturas con calidades promedio de 25,
+## remover los extremos 5' y 3' de baja calidad,
+## retener son reads con longitudes mayores a 50 nt
+## emplear 8 nucleos por operacion
 
 #!/usr/bin/bash
 conda activate fastp ;
@@ -102,8 +106,13 @@ conda deactivate ;
 # PASO 3: Ensamblaje de transcriptomas con TRINITY
 ```r
 
-# se desarrollo el siguiente codigo para ensamblar
-# dos muestras en paralelo, para ello se empleo "parallel"
+##  Se desarrollo el siguiente codigo para ensamblar
+##  dos muestras en paralelo, para ello se empleo "parallel"
+## TRINITY es uno de los programas mas rigurosos para el
+## ensamblaje de transcriptomas y recibe su nombre porque
+## comprende 3 operaciones llamadas : "worm", "chrisalid" y "butterfly".
+## el resultado mas importante es un archivo FASTA que contiene todas
+## las isoformas inferidas.
 
 #!/usr/bin/bash
 
@@ -161,8 +170,9 @@ ls -lh fasta/
 # PASO 4: Estimacion del numero de contigs por transcriptoma ensamblado
 ```r
 
-# Es importante estimar cuantos transcritos se han
-# generado en cada una de las muestras
+##  Es importante estimar cuantos transcritos se han
+##  generado en cada una de las muestras, idealmente
+## deben ser cientos de miles para Lepidium meyenii
 
 #!/usr/bin/bash
 
@@ -177,29 +187,18 @@ echo ""
 done
 ```
 
-# PASO 5: Combinar los archivos FASTQ limpios FORWARD y REVERSE para obtener el PAN-TRANSCRIPTOMA
+
+# PASO 5: Obtencion de un META-TRANSCRIPTOMA. Reducir la redundancia de transcritos con CD-HIT (95%)
 ```r
 
-# con el objetivo de obtener un unico transcriptoma representativo
-# de la diversidad de las 11 muestras de RNA-SEQ, se obtiene un
-# pan-transcriptoma a partir de archivos FORWAR y REVERSE que resultan
-# de la concatenacion de todos los archivos filtrados previamente
-
-zcat SRR2922712.1.clean.fq.gz SRR2922713.1.clean.fq.gz SRR2922714.1.clean.fq.gz SRR2922715.1.clean.fq.gz SRR2922716.1.clean.fq.gz SRR2922717.1.clean.fq.gz SRR2960160.1.clean.fq.gz SRR2960161.1.clean.fq.gz SRR7003712.1.clean.fq.gz SRR7003713.1.clean.fq.gz SRR7003714.1.clean.fq.gz > all.1.clean.fq ;
-gzip all.1.clean.fq ; 
-ls -lSh ;
-
-zcat SRR2922712.2.clean.fq.gz SRR2922713.2.clean.fq.gz SRR2922714.2.clean.fq.gz SRR2922715.2.clean.fq.gz SRR2922716.2.clean.fq.gz SRR2922717.2.clean.fq.gz SRR2960160.2.clean.fq.gz SRR2960161.2.clean.fq.gz SRR7003712.2.clean.fq.gz SRR7003713.2.clean.fq.gz SRR7003714.2.clean.fq.gz > all.2.clean.fq ;
-gzip all.2.clean.fq ; 
-ls -lSh ;
-```
-
-# PASO 6: Reducir la redundancia de transcritos con CD-HIT (95%) para el META-TRANSCRIPTOMA
-```r
-# para obtener un meta-transcriptoma representativo y sin redundancias
-# se limpian los headers de cada transcriptoma individual
-# se concatenan y finalmente se seleccionan aquellas secuencias
-# (transcritos) que tienen identidades menores al 95%
+## para obtener un meta-transcriptoma representativo y sin redundancias
+##  se limpian los headers de cada transcriptoma individual,
+##  se concatenan y finalmente se seleccionan aquellas secuencias
+##  (transcritos) que tienen identidades menores al 95%. el siguiente
+## comando reduce la longitud de los headers de cada transcriptoma
+## genera archivos nuevos, los concatena y genera un nuevo archivo general
+## que contiene secuencias con % de idetidad menores al 95%.
+## de esta manera se obtiene un meta-transciptoma de referencia
 
 #!/usr/bin/bash
 
@@ -234,16 +233,37 @@ cd-hit-est -i all_transcriptomes_combined.fasta -o metatranscriptome_reference.f
 ls -lSh ;
 ```
 
+# PASO 6: Obtencion de un PAN-TRANSCRIPTOMA. Combinar los archivos FASTQ limpios FORWARD y REVERSE.
+```r
+
+## Con el objetivo de obtener OTRO transcriptoma representativo
+## de la diversidad de las 11 muestras de RNA-SEQ, empleamos otro
+## procedimiento con la finalidad de obtener un pan-transcriptoma
+## a partir de archivos FORWARD y REVERSE que resultan
+## de la concatenacion de todos los archivos filtrados previamente
+
+zcat SRR2922712.1.clean.fq.gz SRR2922713.1.clean.fq.gz SRR2922714.1.clean.fq.gz SRR2922715.1.clean.fq.gz SRR2922716.1.clean.fq.gz SRR2922717.1.clean.fq.gz SRR2960160.1.clean.fq.gz SRR2960161.1.clean.fq.gz SRR7003712.1.clean.fq.gz SRR7003713.1.clean.fq.gz SRR7003714.1.clean.fq.gz > all.1.clean.fq ;
+gzip all.1.clean.fq ; 
+ls -lSh ;
+
+zcat SRR2922712.2.clean.fq.gz SRR2922713.2.clean.fq.gz SRR2922714.2.clean.fq.gz SRR2922715.2.clean.fq.gz SRR2922716.2.clean.fq.gz SRR2922717.2.clean.fq.gz SRR2960160.2.clean.fq.gz SRR2960161.2.clean.fq.gz SRR7003712.2.clean.fq.gz SRR7003713.2.clean.fq.gz SRR7003714.2.clean.fq.gz > all.2.clean.fq ;
+gzip all.2.clean.fq ; 
+ls -lSh ;
+```
+
 # PASO 7: Inferir ORFs, peptidos con TRANSDECODER 
 ```r
-# Se infierren los ORFs mas largos en cada transcrito
-# y se traducen para obtener secuencias peptidicas
-# en este proceso se pueden generar dos a mas peptidos
-# por cada transcrito. el resultado es un archivo
-# de extension "*.transdecoder.pep"
 
-conda install bioconda::transdecoder
-conda activate transdecoder
+## Se infierren los ORFs mas largos en cada "transcriptoma
+## de referencia" y se traducen para obtener secuencias peptidicas
+## en este proceso se pueden generar dos a más peptidos
+## por cada transcrito. el resultado es un archivo
+## de extension "*.transdecoder.pep"
+
+## conda install bioconda::transdecoder
+## conda activate transdecoder
+
+## en este ejemplo se emplea solo el "meta-transcriptoma"
 
 TransDecoder.LongOrfs -t metatranscriptome_reference.fasta ;
 TransDecoder.Predict -t metatranscriptome_reference.fasta ;
@@ -251,8 +271,9 @@ TransDecoder.Predict -t metatranscriptome_reference.fasta ;
 
 # PASO 8: Anotar peptidos con EGGNOGMAPPER V5
  ```r
-# para anotar los peptidos se emplea EGGNOGMAPPER,
-# para ello se deben descargar "eggnog_proteins.dmnd.gz" y "eggnog.db.gz"
+
+## Para anotar los peptidos se emplea EGGNOGMAPPER,
+## para ello se deben descargar "eggnog_proteins.dmnd.gz" y "eggnog.db.gz"
 
 wget http://eggnog5.embl.de/download/emapperdb-5.0.2/eggnog.db.gz;
 pigz -d -p 28 eggnog.db.gz
@@ -278,9 +299,9 @@ ls ;
 # PASO 9: Estimar conteos por transcrito con SALMON
 ```r
 
-# finalmente podemos estimar las lecturas que corresponden
-# a cada transcrito, para ello emplealos SALMON
-# se generan archivos llamados "quant.sf"
+## Finalmente podemos estimar las lecturas que corresponden
+## a cada transcrito, es decir una tabla de conteos,
+## para ello emplealos SALMON, se generan archivos llamados "quant.sf"
 
 #!/usr/bin/bash
 
@@ -313,9 +334,10 @@ done
 
 # PASO 10: BLAST contigs_microarray vs metatranscriptoma
  ```r
-# es importante identificar los homologos entre los contigs
-# del ensayo previo (microarray) y los transcriptomas
-# obtenidos a partir de los RNA-SEQ de NCBI
+
+## Es importante identificar los homologos entre los contigs
+## del ensayo previo (microarray) y los transcriptomas
+## obtenidos a partir de los RNA-SEQ de NCBI
 
 ##################################
 ##### BLAST cinco resultados #####
@@ -341,4 +363,8 @@ sed -i '1i qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tssta
 
 # 5. Ver resultados
 head -n 10 blast_results_with_cov_1.tsv
+ ```
+
+# PASOS SIGUIENTE: los siguientes pasos son el analisis de la expresion diferencial (DEGs)
+ ```r
  ```
