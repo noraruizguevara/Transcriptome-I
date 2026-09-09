@@ -51,11 +51,11 @@ ls -lh *.gz ;
 ```r
 
 ## Los arhivos FASTQ necesitan ser filtrados, aquellos con baja calidad seran removidos
-## y sse crean nuevos archivos FASTQ para luego ser ensamblados con FASTP.
-## lo parametros seteados en este programa tiene por objetivo :
+## y se crean nuevos archivos FASTQ para luego ser ensamblados con FASTP.
+## los parametros seteados en este programa tiene por objetivo :
 ## retener lecturas con calidades promedio de 25,
 ## remover los extremos 5' y 3' de baja calidad,
-## retener son reads con longitudes mayores a 50 nt
+## retener son reads con longitudes mayores a 60 nt
 ## emplear 8 nucleos por operacion
 
 #!/usr/bin/bash
