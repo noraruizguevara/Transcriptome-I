@@ -170,9 +170,9 @@ ls -lh fasta/
 # PASO 4: Estimacion del numero de contigs por transcriptoma ensamblado
 ```r
 
-##  Es importante estimar cuantos transcritos se han
-##  generado en cada una de las muestras, idealmente
-## deben ser cientos de miles para Lepidium meyenii
+## Es importante estimar el numero de transcritos que se han
+## generado en cada una de las muestras, idealmente
+## deben ser cientos de miles para Lepidium meyenii (maca)
 
 #!/usr/bin/bash
 
@@ -187,15 +187,14 @@ echo ""
 done
 ```
 
-
 # PASO 5: Obtencion de un META-TRANSCRIPTOMA. Reducir la redundancia de transcritos con CD-HIT (95%)
 ```r
 
-## para obtener un meta-transcriptoma representativo y sin redundancias
-##  se limpian los headers de cada transcriptoma individual,
-##  se concatenan y finalmente se seleccionan aquellas secuencias
-##  (transcritos) que tienen identidades menores al 95%. el siguiente
-## comando reduce la longitud de los headers de cada transcriptoma
+## Para obtener un meta-transcriptoma representativo y sin redundancias
+## se limpian los headers de cada transcriptoma individual,
+## se concatenan y finalmente se seleccionan aquellas secuencias
+## (transcritos) que tienen identidades menores al 95%. El siguiente
+## comando reduce la longitud de los headers de cada transcriptoma,
 ## genera archivos nuevos, los concatena y genera un nuevo archivo general
 ## que contiene secuencias con % de idetidad menores al 95%.
 ## de esta manera se obtiene un meta-transciptoma de referencia
@@ -240,7 +239,12 @@ ls -lSh ;
 ## de la diversidad de las 11 muestras de RNA-SEQ, empleamos otro
 ## procedimiento con la finalidad de obtener un pan-transcriptoma
 ## a partir de archivos FORWARD y REVERSE que resultan
-## de la concatenacion de todos los archivos filtrados previamente
+## de la concatenacion de todos los archivos filtrados previamente.
+## Las siguientes lineas de comando concatenan todos los F en un
+## archivo llamado "all.1.clean.fq" que finalmente es zipeado; y 
+## todos los R en un archivo llamado "all.2.clean.fq" que tambien es zipeado.
+## Luego empleamos TRINITY como en el "PASO 3", pero sin necesidad de
+## un "loop" porque se trata de un par de archivos para un transcriptoma unico.
 
 zcat SRR2922712.1.clean.fq.gz SRR2922713.1.clean.fq.gz SRR2922714.1.clean.fq.gz SRR2922715.1.clean.fq.gz SRR2922716.1.clean.fq.gz SRR2922717.1.clean.fq.gz SRR2960160.1.clean.fq.gz SRR2960161.1.clean.fq.gz SRR7003712.1.clean.fq.gz SRR7003713.1.clean.fq.gz SRR7003714.1.clean.fq.gz > all.1.clean.fq ;
 gzip all.1.clean.fq ; 
@@ -254,16 +258,16 @@ ls -lSh ;
 # PASO 7: Inferir ORFs, peptidos con TRANSDECODER 
 ```r
 
-## Se infierren los ORFs mas largos en cada "transcriptoma
-## de referencia" y se traducen para obtener secuencias peptidicas
-## en este proceso se pueden generar dos a más peptidos
+## Se infieren los ORFs más largos en cada "transcriptoma
+## de referencia" y se traducen para obtener secuencias peptidicas.
+## En este proceso se pueden generar dos a más peptidos
 ## por cada transcrito. el resultado es un archivo
-## de extension "*.transdecoder.pep"
+## de extension "*.transdecoder.pep".
+## en este ejemplo se emplea solo el "meta-transcriptoma",
+## pero tambien se debe emplear para el "pan-transcriptoma"
 
 ## conda install bioconda::transdecoder
 ## conda activate transdecoder
-
-## en este ejemplo se emplea solo el "meta-transcriptoma"
 
 TransDecoder.LongOrfs -t metatranscriptome_reference.fasta ;
 TransDecoder.Predict -t metatranscriptome_reference.fasta ;
